@@ -1,10 +1,12 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.devicetoolv1.ui.screens.*
+import com.example.devicetoolv1.viewmodel.ChannelViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -15,7 +17,7 @@ fun AppNavigation() {
     // Refresh device list every 300 ms.
     LaunchedEffect(Unit) {
         while (true) {
-            HardwareControllerState.refreshAndroidInputDevices()
+            ChannelViewModel.refreshAndroidInputDevices()
             delay(300)
         }
     }

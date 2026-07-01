@@ -1,4 +1,4 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.devicetoolv1.ui.theme.*
 
 @Composable
 fun MenuButton(

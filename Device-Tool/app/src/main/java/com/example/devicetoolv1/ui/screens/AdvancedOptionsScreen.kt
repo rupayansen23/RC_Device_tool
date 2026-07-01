@@ -1,4 +1,4 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.devicetoolv1.ui.theme.*
+import com.example.devicetoolv1.ui.components.*
 
 @Composable
 fun AdvancedOptionsScreen(navController: NavHostController) {

@@ -1,4 +1,4 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,9 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.devicetoolv1.ui.theme.*
 
 @Composable
-fun TelemetryCard(
+fun StatusCard(
     title: String,
     value: String,
     progress: Float,

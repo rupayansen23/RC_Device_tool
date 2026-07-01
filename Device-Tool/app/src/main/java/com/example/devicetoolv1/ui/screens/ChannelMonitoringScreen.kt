@@ -1,4 +1,4 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -17,10 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.devicetoolv1.ui.theme.*
+import com.example.devicetoolv1.ui.components.AppBackButton
+import com.example.devicetoolv1.viewmodel.ChannelViewModel
 
 @Composable
 fun ChannelMonitoringScreen(navController: NavHostController) {
-    val hardwareChannels = HardwareControllerState.currentChannels()
+    val hardwareChannels = ChannelViewModel.currentChannels()
 
     Column(
         modifier = Modifier

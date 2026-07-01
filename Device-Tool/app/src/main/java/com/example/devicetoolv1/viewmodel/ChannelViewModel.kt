@@ -1,4 +1,4 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.viewmodel
 
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.util.Locale
 import kotlin.math.abs
+import com.example.devicetoolv1.model.*
 
 private data class StickAxisMapping(
     val leftX: Int,
@@ -18,53 +19,8 @@ private data class StickAxisMapping(
     val rightY: Int
 )
 
-enum class ControlAxis {
-    Roll,
-    Pitch,
-    Throttle,
-    Yaw
-}
-
-data class StickModePreset(
-    val country: String,
-    val mode: String,
-    val leftHorizontal: ControlAxis,
-    val leftVertical: ControlAxis,
-    val rightHorizontal: ControlAxis,
-    val rightVertical: ControlAxis
-)
-
-val StickModePresets = listOf(
-    StickModePreset("USA",    "MODE 2", ControlAxis.Yaw,  ControlAxis.Throttle, ControlAxis.Roll, ControlAxis.Pitch),
-    StickModePreset("JAPAN",  "MODE 1", ControlAxis.Yaw,  ControlAxis.Pitch,    ControlAxis.Roll, ControlAxis.Throttle),
-    StickModePreset("EUROPE", "MODE 3", ControlAxis.Roll, ControlAxis.Throttle, ControlAxis.Yaw,  ControlAxis.Pitch),
-    StickModePreset("CHINA",  "MODE 4", ControlAxis.Roll, ControlAxis.Pitch,    ControlAxis.Yaw,  ControlAxis.Throttle)
-)
-
-fun ControlAxis.shortName(): String = when (this) {
-    ControlAxis.Roll     -> "R"
-    ControlAxis.Pitch    -> "P"
-    ControlAxis.Throttle -> "T"
-    ControlAxis.Yaw      -> "Y"
-}
-
-fun ControlAxis.displayName(): String = when (this) {
-    ControlAxis.Roll     -> "ROLL"
-    ControlAxis.Pitch    -> "PITCH"
-    ControlAxis.Throttle -> "THROTTLE"
-    ControlAxis.Yaw      -> "YAW"
-}
-
 fun channelValueFromMovement(movement: Float): Int =
     (1500 + movement.coerceIn(-1f, 1f) * 500).toInt().coerceIn(1000, 2000)
-
-fun channelForAxis(axis: ControlAxis, ch1: Int, ch2: Int, ch3: Int, ch4: Int): Int =
-    when (axis) {
-        ControlAxis.Roll     -> ch1
-        ControlAxis.Pitch    -> ch2
-        ControlAxis.Throttle -> ch3
-        ControlAxis.Yaw      -> ch4
-    }
 
 // All candidate axis mappings tried in order — the one with the most movement wins.
 private val candidateMappings = listOf(
@@ -93,7 +49,7 @@ private val usefulAxes = setOf(
     MotionEvent.AXIS_BRAKE
 )
 
-object HardwareControllerState {
+object ChannelViewModel {
 
     var selectedModeIndex by mutableIntStateOf(0)
         private set
@@ -130,27 +86,12 @@ object HardwareControllerState {
         updateChannels()
     }
 
-    /**
-     * BUG FIX: The original code rejected events that weren't from SOURCE_JOYSTICK /
-     * SOURCE_GAMEPAD / SOURCE_DPAD.  The H12 Pro tablet does NOT expose the physical
-     * sticks via those standard Android sources, so every motion event was silently
-     * dropped and the UI always showed "No Android joystick event yet".
-     *
-     * New strategy:
-     *  1. Accept ACTION_MOVE and ACTION_HOVER_MOVE unconditionally (don't gate on source).
-     *  2. Require that at least one useful axis has a non-trivial value (> 0.005)
-     *     to avoid spamming state from pure touch/mouse drag events.
-     *  3. Pick the axis mapping with the most total movement (same heuristic as before).
-     */
     fun updateFromMotionEvent(event: MotionEvent): Boolean {
         // Only process move-type actions
         if (event.action != MotionEvent.ACTION_MOVE &&
             event.action != MotionEvent.ACTION_HOVER_MOVE
         ) return false
 
-        // Require at least one useful axis to carry a meaningful value so that
-        // finger-swipe / mouse events on the touchscreen don't pollute stick state.
-        // Threshold lowered to 0.005 (was effectively ~0.01) for more sensitivity.
         val hasAnyAxisMovement = usefulAxes.any { axis ->
             abs(event.getAxisValue(axis)) > 0.005f
         }
@@ -189,7 +130,6 @@ object HardwareControllerState {
             .toList()
             .mapNotNull { id -> InputDevice.getDevice(id) }
 
-        // Show ALL devices, not just controller-like ones, so we can diagnose H12 Pro
         androidInputDevices = if (devices.isEmpty()) {
             "No Android input devices found."
         } else {
@@ -205,12 +145,8 @@ object HardwareControllerState {
 
     fun currentChannels(): List<Int> = listOf(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8, ch9, ch10, ch11, ch12)
 
-    // ── private helpers ──────────────────────────────────────────────────────
-
     private fun updateChannels() {
-        // Reset primary sticks
         ch1 = 1500; ch2 = 1500; ch3 = 1000; ch4 = 1500
-        // CH5-12 are usually switches or dials, defaulting to center
         ch5 = 1500; ch6 = 1500; ch7 = 1500; ch8 = 1500
         ch9 = 1500; ch10 = 1500; ch11 = 1500; ch12 = 1500
 
@@ -238,8 +174,6 @@ object HardwareControllerState {
                     abs(event.centeredAxis(m.rightY))
         }
 }
-
-// ── MotionEvent helpers ───────────────────────────────────────────────────────
 
 private fun MotionEvent.centeredAxis(axis: Int): Float {
     val range = device?.getMotionRange(axis, source)
@@ -275,14 +209,7 @@ private fun MotionEvent.axisSummary(): String {
     }
 }
 
-// ── InputDevice helpers ───────────────────────────────────────────────────────
-
 private fun InputDevice.supportsSource(source: Int) = sources and source == source
-
-private fun InputDevice.supportsControllerInput() =
-    supportsSource(InputDevice.SOURCE_JOYSTICK) ||
-            supportsSource(InputDevice.SOURCE_GAMEPAD)  ||
-            supportsSource(InputDevice.SOURCE_DPAD)
 
 private fun MotionEvent.isControllerLike() =
     isFromSource(InputDevice.SOURCE_JOYSTICK) ||

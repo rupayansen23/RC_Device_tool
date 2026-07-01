@@ -1,4 +1,4 @@
-package com.example.devicetoolv1
+package com.example.devicetoolv1.ui.screens
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import com.example.devicetoolv1.ui.theme.*
 
 @Composable
 fun VideoViewingScreen(navController: NavHostController) {
